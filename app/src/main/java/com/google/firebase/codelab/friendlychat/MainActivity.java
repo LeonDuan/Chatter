@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     private static final String TAG = "MainActivity";
     public static final String MESSAGES_CHILD = "messages";
+    public static final String CONTACTS_CHILD = "contacts";
     private static final int REQUEST_INVITE = 1;
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 10;
     public static final String ANONYMOUS = "anonymous";
@@ -288,6 +289,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
+
     public void fetchConfig() {
         long cacheExpiration = 3600; // 1 hour in seconds
         // If developer mode is enabled reduce cacheExpiration to 0 so that

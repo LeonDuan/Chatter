@@ -4,26 +4,20 @@ import java.util.ArrayList;
 
 public class chatterContact {
     private String user;
-    private ArrayList<String> contacts;
-    private ArrayList<String> photoUrl;
+    private String photoUrl;
 
     public chatterContact(){}
 
-    public chatterContact(String user, ArrayList<String> contacts, ArrayList<String> photoUrl){
+    public chatterContact(String user, String photoUrl){
         this.user = user;
-        this.contacts = new ArrayList<>(contacts);
-        this.photoUrl = new ArrayList<>(contacts);
+        this.photoUrl = photoUrl;
     }
 
     public String getUser(){
         return user;
     }
 
-    public ArrayList<String> getContacts(){
-        return contacts;
-    }
-
-    public ArrayList<String> getPhotoUrl(){
+    public String getPhotoUrl(){
         return photoUrl;
     }
 
@@ -31,11 +25,7 @@ public class chatterContact {
         this. user = user;
     }
 
-    public void setContacts(ArrayList<String> contacts){
-        this.contacts = new ArrayList<>(contacts);
-    }
-
-    public void setPhotoUrl(ArrayList<String> photoUrl){
-        this.photoUrl = new ArrayList<>(photoUrl);
+    public void setPhotoUrl(String photoUrl){
+        this.photoUrl = photoUrl;
     }
 }
