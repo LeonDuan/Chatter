@@ -1,5 +1,4 @@
-
-package com.google.firebase.codelab.friendlychat;
+package com.chatter.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.chatter.model.ChatterContact;
+import com.chatter.model.ChatterMessage;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.appinvite.AppInvite;
 import com.google.android.gms.appinvite.AppInviteInvitation;
@@ -35,6 +36,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.chatter.R;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
@@ -52,11 +54,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private DatabaseReference mFirebaseDatabaseReference;
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private GoogleApiClient mGoogleApiClient;
+    private String mUsername;
+    private String mPhotoUrl;
+    private SharedPreferences mSharedPreferences;
+    private Button mSendButton;
+    private RecyclerView mMessageRecyclerView;
+    private LinearLayoutManager mLinearLayoutManager;
+    private ProgressBar mProgressBar;
+    private EditText mMessageEditText;
 
     public static final String FRIENDLY_MSG_LENGTH = "friendly_msg_length";
 
-    private FirebaseRecyclerAdapter<chatterMessage, MessageViewHolder>
-            mFirebaseAdapter;
+    private FirebaseRecyclerAdapter<ChatterMessage, MessageViewHolder> mFirebaseAdapter;
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         public TextView messageTextView;
@@ -78,18 +87,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 10;
     public static final String ANONYMOUS = "anonymous";
     private static final String MESSAGE_SENT_EVENT = "message_sent";
-    private String mUsername;
-    private String mPhotoUrl;
-    private SharedPreferences mSharedPreferences;
-
-
-    private Button mSendButton;
-    private RecyclerView mMessageRecyclerView;
-    private LinearLayoutManager mLinearLayoutManager;
-    private ProgressBar mProgressBar;
-    private EditText mMessageEditText;
-
-    // Firebase instance variables
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,18 +145,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         // Fetch remote config.
         fetchConfig();
 
-
+        // MainActivity
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<chatterMessage,
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<ChatterMessage,
                 MessageViewHolder>(
-                chatterMessage.class,
+                ChatterMessage.class,
                 R.layout.item_message,
                 MessageViewHolder.class,
                 mFirebaseDatabaseReference.child(MESSAGES_CHILD)) {
 
             @Override
             protected void populateViewHolder(MessageViewHolder viewHolder,
-                                              chatterMessage chatterMessage, int position) {
+                                              ChatterMessage chatterMessage, int position) {
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 viewHolder.messageTextView.setText(chatterMessage.getText());
                 viewHolder.messengerTextView.setText(chatterMessage.getName());
@@ -223,13 +220,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                chatterMessage chatterMessage = new
-                        chatterMessage(mMessageEditText.getText().toString(),
+                ChatterMessage chatterMessage = new
+                        ChatterMessage(mMessageEditText.getText().toString(),
                         mUsername,
                         mPhotoUrl);
                 mFirebaseDatabaseReference.child(MESSAGES_CHILD)
                         .push().setValue(chatterMessage);
                 mMessageEditText.setText("");
+                // also adds contacts
+                ChatterContact chatterContact = new ChatterContact(mUsername,
+                        mFirebaseUser.getEmail().toString(),
+                        mPhotoUrl);
+                mFirebaseDatabaseReference.child(CONTACTS_CHILD)
+                        .push().setValue(chatterContact);
             }
         });
     }
@@ -270,6 +273,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 sendInvitation();
             case R.id.fresh_config_menu:
                 fetchConfig();
+                return true;
+            case R.id.contact_menu:
+                startActivity(new Intent(this, ContactActivity.class));
                 return true;
             case R.id.sign_out_menu:
                 mFirebaseAuth.signOut();
@@ -333,6 +339,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 InputFilter.LengthFilter(friendly_msg_length.intValue())});
         Log.d(TAG, "FML is: " + friendly_msg_length);
     }
+
     private void sendInvitation() {
         Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invitation_title))
                 .setMessage(getString(R.string.invitation_message))
@@ -340,6 +347,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .build();
         startActivityForResult(intent, REQUEST_INVITE);
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

@@ -1,21 +1,23 @@
-package com.google.firebase.codelab.friendlychat;
+package com.chatter.model;
 
-import java.util.ArrayList;
-
-public class chatterContact {
+public class ChatterContact {
     private String user;
+    private String email;
     private String photoUrl;
 
-    public chatterContact(){}
+    public ChatterContact(){}
 
-    public chatterContact(String user, String photoUrl){
+    public ChatterContact(String user, String email, String photoUrl){
         this.user = user;
+        this.email = email;
         this.photoUrl = photoUrl;
     }
 
     public String getUser(){
         return user;
     }
+
+    public String getEmail(){return email;}
 
     public String getPhotoUrl(){
         return photoUrl;
@@ -24,6 +26,8 @@ public class chatterContact {
     public void setUser(String user){
         this. user = user;
     }
+
+    public void setEmail(String email){this.email = email;}
 
     public void setPhotoUrl(String photoUrl){
         this.photoUrl = photoUrl;

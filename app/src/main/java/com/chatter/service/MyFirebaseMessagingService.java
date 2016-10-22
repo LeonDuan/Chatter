@@ -1,5 +1,4 @@
-
-package com.google.firebase.codelab.friendlychat;
+package com.chatter.service;
 
 import android.util.Log;
 

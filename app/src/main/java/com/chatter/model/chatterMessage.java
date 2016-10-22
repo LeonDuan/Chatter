@@ -1,16 +1,15 @@
+package com.chatter.model;
 
-package com.google.firebase.codelab.friendlychat;
-
-public class chatterMessage {
+public class ChatterMessage {
 
     private String text;
     private String name;
     private String photoUrl;
 
-    public chatterMessage() {
+    public ChatterMessage() {
     }
 
-    public chatterMessage(String text, String name, String photoUrl) {
+    public ChatterMessage(String text, String name, String photoUrl) {
         this.text = text;
         this.name = name;
         this.photoUrl = photoUrl;
