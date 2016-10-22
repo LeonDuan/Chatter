@@ -26,6 +26,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.chatter.model.ChatterContact;
 import com.chatter.model.ChatterMessage;
+import com.chatter.model.MessageViewHolder;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.appinvite.AppInvite;
 import com.google.android.gms.appinvite.AppInviteInvitation;
@@ -66,19 +67,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     public static final String FRIENDLY_MSG_LENGTH = "friendly_msg_length";
 
     private FirebaseRecyclerAdapter<ChatterMessage, MessageViewHolder> mFirebaseAdapter;
-
-    public static class MessageViewHolder extends RecyclerView.ViewHolder {
-        public TextView messageTextView;
-        public TextView messengerTextView;
-        public CircleImageView messengerImageView;
-
-        public MessageViewHolder(View v) {
-            super(v);
-            messageTextView = (TextView) itemView.findViewById(R.id.messageTextView);
-            messengerTextView = (TextView) itemView.findViewById(R.id.messengerTextView);
-            messengerImageView = (CircleImageView) itemView.findViewById(R.id.messengerImageView);
-        }
-    }
 
     private static final String TAG = "MainActivity";
     public static final String MESSAGES_CHILD = "messages";
@@ -227,12 +215,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 mFirebaseDatabaseReference.child(MESSAGES_CHILD)
                         .push().setValue(chatterMessage);
                 mMessageEditText.setText("");
-                // also adds contacts
-                ChatterContact chatterContact = new ChatterContact(mUsername,
-                        mFirebaseUser.getEmail().toString(),
-                        mPhotoUrl);
-                mFirebaseDatabaseReference.child(CONTACTS_CHILD)
-                        .push().setValue(chatterContact);
             }
         });
     }
