@@ -23,4 +23,5 @@ public class MessageViewHolder extends RecyclerView.ViewHolder {
         messengerTextView = (TextView) itemView.findViewById(R.id.messengerTextView);
         messengerImageView = (CircleImageView) itemView.findViewById(R.id.messengerImageView);
     }
+
 }

@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.chatter.Constants;
 import com.chatter.model.ChatterContact;
 import com.chatter.model.ChatterMessage;
 import com.chatter.model.MessageViewHolder;
@@ -61,23 +62,13 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
     private GoogleApiClient mGoogleApiClient;
     private String mUsername;
     private String mPhotoUrl;
-    private String mUid;
-    private String mEmail;
     private SharedPreferences mSharedPreferences;
-    private Button mAddContactButton;
     private RecyclerView mMessageRecyclerView;
     private LinearLayoutManager mLinearLayoutManager;
     private ProgressBar mProgressBar;
-    private EditText mMessageEditText;
 
-    private static final String TAG = "MainActivity";
-    public static final String MESSAGES_CHILD = "messages";
-    public static final String CONTACTS_CHILD = "contacts";
-    private static final int REQUEST_INVITE = 1;
-    public static final int DEFAULT_MSG_LENGTH_LIMIT = 10;
-    public static final String ANONYMOUS = "anonymous";
-    private static final String MESSAGE_SENT_EVENT = "message_sent";
-    public static final String FRIENDLY_MSG_LENGTH = "friendly_msg_length";
+    private Constants constants;
+    private String TAG = "ContactActivity";
 
     private FirebaseRecyclerAdapter<ChatterContact, MessageViewHolder> mFirebaseAdapter;
 
@@ -100,8 +91,6 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
             return;
         } else {
             mUsername = mFirebaseUser.getDisplayName();
-            mUid = mFirebaseUser.getUid();
-            mEmail = mFirebaseUser.getEmail();
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
@@ -120,43 +109,21 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
         mLinearLayoutManager.setStackFromEnd(true);
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
 
-
-        // Initialize Firebase Remote Config.
-        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-
-        // Define Firebase Remote Config Settings.
-        FirebaseRemoteConfigSettings firebaseRemoteConfigSettings =
-                new FirebaseRemoteConfigSettings.Builder()
-                        .setDeveloperModeEnabled(true)
-                        .build();
-
-        // Define default config values. Defaults are used when fetched config values are not
-        // available. Eg: if an error occurred fetching values from the server.
-        Map<String, Object> defaultConfigMap = new HashMap<>();
-        defaultConfigMap.put("friendly_msg_length", 10L);
-
-        // Apply config settings and default values.
-        mFirebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);
-        mFirebaseRemoteConfig.setDefaults(defaultConfigMap);
-
-        // Fetch remote config.
-        fetchConfig();
-
         // Initialize Database Reference
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         mFirebaseAdapter = new FirebaseRecyclerAdapter<ChatterContact,
                 MessageViewHolder>(
                 ChatterContact.class,
-                R.layout.item_message,
+                R.layout.item_contact,
                 MessageViewHolder.class,
-                mFirebaseDatabaseReference.child(CONTACTS_CHILD)) {
+                mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD)) {
 
             @Override
             protected void populateViewHolder(MessageViewHolder viewHolder,
                                               ChatterContact chatterContact, int position) {
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                viewHolder.messageTextView.setText(chatterContact.getUser());
                 viewHolder.messengerTextView.setText(chatterContact.getEmail());
+
                 if (chatterContact.getPhotoUrl() == null) {
                     viewHolder.messengerImageView
                             .setImageDrawable(ContextCompat
@@ -175,14 +142,14 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
                 int friendlyMessageCount = mFirebaseAdapter.getItemCount();
-                int lastVisiblePosition =
-                        mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
+                int firstVisiblePosition =
+                        mLinearLayoutManager.findFirstCompletelyVisibleItemPosition();
                 // If the recycler view is initially being loaded or the
                 // user is at the bottom of the list, scroll to the bottom
                 // of the list to show the newly added message.
-                if (lastVisiblePosition == -1 ||
+                if (firstVisiblePosition == -1 ||
                         (positionStart >= (friendlyMessageCount - 1) &&
-                                lastVisiblePosition == (positionStart - 1))) {
+                                firstVisiblePosition == (positionStart - 1))) {
                     mMessageRecyclerView.scrollToPosition(positionStart);
                 }
             }
@@ -191,43 +158,18 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
         mMessageRecyclerView.setAdapter(mFirebaseAdapter);
 
-        mMessageEditText = (EditText) findViewById(R.id.messageEditText);
-        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(mSharedPreferences
-                .getInt(FRIENDLY_MSG_LENGTH, DEFAULT_MSG_LENGTH_LIMIT))});
-        mMessageEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.toString().trim().length() > 0) {
-                    mAddContactButton.setEnabled(true);
-                } else {
-                    mAddContactButton.setEnabled(false);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-            }
-        });
-
-        mAddContactButton = (Button) findViewById(R.id.bAddContact);
-        mAddContactButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ChatterContact chatterContact = new ChatterContact(mUsername, mEmail, mPhotoUrl);
-                mFirebaseDatabaseReference.child(CONTACTS_CHILD).child(mUid).setValue(chatterContact);
-            }
-        });
-
     }
 
 
     @Override
     public void onStart() {
         super.onStart();
+        // Check if user is signed in.
+        if(mFirebaseUser==null){
+            startActivity(new Intent(this, SignInActivity.class));
+            finish();
+            return;
+        }
     }
 
     @Override
@@ -257,16 +199,10 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
         switch (item.getItemId()) {
             case R.id.invite_menu:
                 sendInvitation();
-            case R.id.fresh_config_menu:
-                fetchConfig();
-                return true;
-            case R.id.contact_menu:
-                startActivity(new Intent(this, ContactActivity.class));
-                return true;
             case R.id.sign_out_menu:
                 mFirebaseAuth.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                mUsername = ANONYMOUS;
+                mUsername = constants.ANONYMOUS;
                 startActivity(new Intent(this, SignInActivity.class));
                 return true;
             default:
@@ -282,51 +218,12 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
-    public void fetchConfig() {
-        long cacheExpiration = 3600; // 1 hour in seconds
-        // If developer mode is enabled reduce cacheExpiration to 0 so that
-        // each fetch goes to the server. This should not be used in release
-        // builds.
-        if (mFirebaseRemoteConfig.getInfo().getConfigSettings()
-                .isDeveloperModeEnabled()) {
-            cacheExpiration = 0;
-        }
-        mFirebaseRemoteConfig.fetch(cacheExpiration)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        // Make the fetched config available via
-                        // FirebaseRemoteConfig get<type> calls.
-                        mFirebaseRemoteConfig.activateFetched();
-                        applyRetrievedLengthLimit();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // There has been an error fetching the config
-                        Log.w(TAG, "Error fetching config: " +
-                                e.getMessage());
-                        applyRetrievedLengthLimit();
-                    }
-                });
-    }
-
-    private void applyRetrievedLengthLimit() {
-        Long friendly_msg_length =
-                mFirebaseRemoteConfig.getLong("friendly_msg_length");
-        mMessageEditText.setFilters(new InputFilter[]{new
-                InputFilter.LengthFilter(friendly_msg_length.intValue())});
-        Log.d(TAG, "FML is: " + friendly_msg_length);
-    }
-
-
     private void sendInvitation() {
         Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invitation_title))
                 .setMessage(getString(R.string.invitation_message))
                 .setCallToActionText(getString(R.string.invitation_cta))
                 .build();
-        startActivityForResult(intent, REQUEST_INVITE);
+        startActivityForResult(intent, constants.REQUEST_INVITE);
     }
 
     /**
@@ -349,8 +246,6 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
     public void onStop() {
         super.onStop();
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
         AppIndex.AppIndexApi.end(mGoogleApiClient, getIndexApiAction());
         mGoogleApiClient.disconnect();
     }
