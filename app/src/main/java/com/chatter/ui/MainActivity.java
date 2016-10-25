@@ -232,8 +232,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.invite_menu:
-                sendInvitation();
+            //case R.id.invite_menu:
+               // sendInvitation();
             case R.id.contact_menu:
                 startActivity(new Intent(this, ContactActivity.class));
                 return true;
