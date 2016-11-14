@@ -8,6 +8,10 @@ public class ChatterMessage {
 
     public ChatterMessage() {
     }
+    public ChatterMessage(String text, String name){
+        this.text = text;
+        this.name = name;
+    }
 
     public ChatterMessage(String text, String name, String photoUrl) {
         this.text = text;

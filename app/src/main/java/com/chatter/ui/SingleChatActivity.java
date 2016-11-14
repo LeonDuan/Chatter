@@ -73,6 +73,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_chat);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -92,6 +93,15 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
             }
         }
 
+        Bundle extras = getIntent().getExtras();
+        String roomNumber = "1";
+        if (extras != null) {
+            roomNumber = extras.getString("email");
+            //The key argument here must match that used in the other activity
+        }
+        ChatterMessage system = new ChatterMessage("You can now start chatting.", "System");
+        mFirebaseDatabaseReference.child(roomNumber).push().setValue(system);
+
         // initialize google API client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
@@ -107,13 +117,12 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
 
         // messages display setup
-        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         mFirebaseAdapter = new FirebaseRecyclerAdapter<ChatterMessage,
                 MessageViewHolder>(
                 ChatterMessage.class,
                 R.layout.item_message,
                 MessageViewHolder.class,
-                mFirebaseDatabaseReference.child(constants.MESSAGES_CHILD)) {
+                mFirebaseDatabaseReference.child(roomNumber)) {
 
             @Override
             protected void populateViewHolder(MessageViewHolder viewHolder,
@@ -180,6 +189,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
 
         // send button
         mSendButton = (Button) findViewById(R.id.sendButton);
+        final String finalRoomNumber = roomNumber;
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -187,7 +197,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                         ChatterMessage(mMessageEditText.getText().toString(),
                         mUsername,
                         mPhotoUrl);
-                mFirebaseDatabaseReference.child(constants.MESSAGES_CHILD)
+                mFirebaseDatabaseReference.child(finalRoomNumber)
                         .push().setValue(chatterMessage);
                 mMessageEditText.setText("");
             }

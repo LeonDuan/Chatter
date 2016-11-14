@@ -56,15 +56,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private DatabaseReference mFirebaseDatabaseReference;
     private GoogleApiClient mGoogleApiClient;
     private String mUsername;
+    private String mUserid;
+    private String mUseremail;
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
+    private EditText etChat;
     private Button bSingleChat;
     private Button bGroupChat;
     private Button bContact;
-    private RecyclerView mMessageRecyclerView;
-    private LinearLayoutManager mLinearLayoutManager;
-    private ProgressBar mProgressBar;
-    private EditText mMessageEditText;
 
     private Constants constants;
     private String TAG = "MainActivity";
@@ -88,13 +87,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             return;
         } else {
             mUsername = mFirebaseUser.getDisplayName();
-            if(mUsername==null){
-                mUsername = constants.ANONYMOUS;
+            mUserid = mFirebaseUser.getUid();
+            mUseremail = mFirebaseUser.getEmail();
+            if (mUsername == null) {
+                mUsername = mUseremail;
             }
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
         }
+
+
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserid).child("name").setValue(mUsername);
 
         // initialize google API client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -108,7 +113,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         bSingleChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, SingleChatActivity.class));
+                etChat = (EditText) findViewById(R.id.etChat);
+                String chat = etChat.getText().toString();
+                if(etChat!=null){
+                    mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserid).child(chat).setValue("2");
+                    Intent intent = new Intent(MainActivity.this, SingleChatActivity.class);
+                    intent.putExtra("email", chat);
+                    startActivity(intent);
+                }
             }
         });
 
