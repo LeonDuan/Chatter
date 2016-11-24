@@ -94,13 +94,11 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
         }
 
         Bundle extras = getIntent().getExtras();
-        String roomNumber = "1";
+        String roomName = "1";
         if (extras != null) {
-            roomNumber = extras.getString("email");
+            roomName = extras.getString("roomname");
             //The key argument here must match that used in the other activity
         }
-        ChatterMessage system = new ChatterMessage("You can now start chatting.", "System");
-        mFirebaseDatabaseReference.child(roomNumber).push().setValue(system);
 
         // initialize google API client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -122,7 +120,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                 ChatterMessage.class,
                 R.layout.item_message,
                 MessageViewHolder.class,
-                mFirebaseDatabaseReference.child(roomNumber)) {
+                mFirebaseDatabaseReference.child(roomName)) {
 
             @Override
             protected void populateViewHolder(MessageViewHolder viewHolder,
@@ -189,7 +187,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
 
         // send button
         mSendButton = (Button) findViewById(R.id.sendButton);
-        final String finalRoomNumber = roomNumber;
+        final String finalRoomNumber = roomName;
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

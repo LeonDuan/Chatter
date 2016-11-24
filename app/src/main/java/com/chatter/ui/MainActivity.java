@@ -116,9 +116,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 etChat = (EditText) findViewById(R.id.etChat);
                 String chat = etChat.getText().toString();
                 if(etChat!=null){
-                    mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserid).child(chat).setValue("2");
+                    String tmp = mUseremail.split("@")[0] + chat.split("@")[0];
+                    String tmp2 = chat.split("@")[0] + mUseremail.split("@")[0];
+                    // chatroom does not exist for this one-to-one
+                    if(mFirebaseDatabaseReference.child(tmp)==null && mFirebaseDatabaseReference.child(tmp2)==null){
+                        ChatterMessage system = new ChatterMessage("You can now start chatting.", "System");
+                        mFirebaseDatabaseReference.child(tmp).push().setValue(system);
+                    }
                     Intent intent = new Intent(MainActivity.this, SingleChatActivity.class);
-                    intent.putExtra("email", chat);
+                    if(mFirebaseDatabaseReference.child(tmp)!=null){
+                        intent.putExtra("roomname", tmp);
+                    }else {
+                        intent.putExtra("roomname", tmp2);
+                    }
                     startActivity(intent);
                 }
             }
