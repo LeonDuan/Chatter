@@ -39,8 +39,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.chatter.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
@@ -99,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserid).child("name").setValue(mUsername);
+        mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserid).child("email").setValue(mUsername);
 
         // initialize google API client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -116,20 +119,30 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 etChat = (EditText) findViewById(R.id.etChat);
                 String chat = etChat.getText().toString();
                 if(etChat!=null){
-                    String tmp = mUseremail.split("@")[0] + chat.split("@")[0];
-                    String tmp2 = chat.split("@")[0] + mUseremail.split("@")[0];
-                    // chatroom does not exist for this one-to-one
-                    if(mFirebaseDatabaseReference.child(tmp)==null && mFirebaseDatabaseReference.child(tmp2)==null){
-                        ChatterMessage system = new ChatterMessage("You can now start chatting.", "System");
-                        mFirebaseDatabaseReference.child(tmp).push().setValue(system);
-                    }
-                    Intent intent = new Intent(MainActivity.this, SingleChatActivity.class);
-                    if(mFirebaseDatabaseReference.child(tmp)!=null){
-                        intent.putExtra("roomname", tmp);
-                    }else {
-                        intent.putExtra("roomname", tmp2);
-                    }
-                    startActivity(intent);
+                    final String tmp = mUseremail.split("@")[0] + chat.split("@")[0];
+                    final String tmp2 = chat.split("@")[0] + mUseremail.split("@")[0];
+                    mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(!dataSnapshot.hasChild(tmp) && !dataSnapshot.hasChild(tmp2)){
+                                ChatterMessage system = new ChatterMessage("You can now start chatting.", "System");
+                                mFirebaseDatabaseReference.child(tmp).push().setValue(system);
+                            }
+
+                            Intent intent = new Intent(MainActivity.this, SingleChatActivity.class);
+                            if(dataSnapshot.hasChild(tmp)){
+                                intent.putExtra("roomname", tmp);
+                            }else {
+                                intent.putExtra("roomname", tmp2);
+                            }
+                            startActivity(intent);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
         });
