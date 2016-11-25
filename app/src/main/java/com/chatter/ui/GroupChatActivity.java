@@ -85,10 +85,7 @@ public class GroupChatActivity extends AppCompatActivity implements GoogleApiCli
             finish();
             return;
         } else {
-            mUsername = mFirebaseUser.getDisplayName();
-            if(mUsername==null){
-                mUsername = constants.ANONYMOUS;
-            }
+            mUsername = mFirebaseUser.getEmail().split("@")[0];
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }

@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private Button bSingleChat;
     private Button bGroupChat;
     private Button bContact;
+    private Button bUpload;
 
     private Constants constants;
     private String TAG = "MainActivity";
@@ -163,6 +164,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         });
 
+        bUpload = (Button) findViewById(R.id.bUpload);
+        bUpload.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                startActivity(new Intent(MainActivity.this, UploadActivity.class));
+            }
+        });
+
     }
 
     @Override
@@ -209,7 +218,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             case R.id.sign_out_menu:
                 mFirebaseAuth.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                mUsername = constants.ANONYMOUS;
                 startActivity(new Intent(this, SignInActivity.class));
                 return true;
             default:

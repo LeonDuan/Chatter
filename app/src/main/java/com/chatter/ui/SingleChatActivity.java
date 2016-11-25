@@ -84,10 +84,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
             finish();
             return;
         } else {
-            mUsername = mFirebaseUser.getDisplayName();
-            if(mUsername==null){
-                mUsername = constants.ANONYMOUS;
-            }
+            mUsername = mFirebaseUser.getEmail().split("@")[0];
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }

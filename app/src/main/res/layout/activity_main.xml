@@ -49,4 +49,13 @@
         android:hint="Type Email to chat"
         android:textAlignment="center" />
 
+    <Button
+        android:text="Upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bContact"
+        android:layout_alignStart="@+id/bSingleChat"
+        android:layout_marginTop="20dp"
+        android:id="@+id/bUpload" />
+
 </RelativeLayout>
