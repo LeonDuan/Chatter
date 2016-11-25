@@ -1,41 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.chatter.ui.MainActivity">
-
-    <Button
-        android:text="Chat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/bSingleChat"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="111dp" />
-
-    <Button
-        android:text="Group Chat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="71dp"
-        android:id="@+id/bGroupChat"
-        android:layout_below="@+id/bSingleChat"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        android:text="Contact"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/bGroupChat"
-        android:layout_alignEnd="@+id/bSingleChat"
-        android:layout_marginTop="69dp"
-        android:id="@+id/bContact" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -50,12 +23,12 @@
         android:textAlignment="center" />
 
     <Button
-        android:text="Upload"
+        android:text="Chat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/bContact"
-        android:layout_alignStart="@+id/bSingleChat"
-        android:layout_marginTop="20dp"
-        android:id="@+id/bUpload" />
+        android:id="@+id/bSingleChat"
+        android:layout_marginTop="50dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

@@ -147,31 +147,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 }
             }
         });
-
-        bGroupChat = (Button) findViewById(R.id.bGroupChat);
-        bGroupChat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, GroupChatActivity.class));
-            }
-        });
-
-        bContact = (Button) findViewById(R.id.bContact);
-        bContact.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, ContactActivity.class));
-            }
-        });
-
-        bUpload = (Button) findViewById(R.id.bUpload);
-        bUpload.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                startActivity(new Intent(MainActivity.this, UploadActivity.class));
-            }
-        });
-
     }
 
     @Override
@@ -181,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         if(mFirebaseUser==null){
             startActivity(new Intent(this, SignInActivity.class));
             finish();
-            return;
         }
     }
 
@@ -210,10 +184,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            //case R.id.invite_menu:
-               // sendInvitation();
+
+            case R.id.single_chat_menu:
+                return true;
+            case R.id.group_chat_menu:
+                startActivity(new Intent(this, GroupChatActivity.class));
+                return true;
             case R.id.contact_menu:
                 startActivity(new Intent(this, ContactActivity.class));
+                return true;
+            case R.id.upload_menu:
+                startActivity(new Intent(this, UploadActivity.class));
                 return true;
             case R.id.sign_out_menu:
                 mFirebaseAuth.signOut();
@@ -233,31 +214,4 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
-    private void sendInvitation() {
-        Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invitation_title))
-                .setMessage(getString(R.string.invitation_message))
-                .setCallToActionText(getString(R.string.invitation_cta))
-                .build();
-        startActivityForResult(intent, constants.REQUEST_INVITE);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult: requestCode=" + requestCode +
-                ", resultCode=" + resultCode);
-
-        if (requestCode == constants.REQUEST_INVITE) {
-            if (resultCode == RESULT_OK) {
-                // Check how many invitations were sent.
-                String[] ids = AppInviteInvitation
-                        .getInvitationIds(resultCode, data);
-                Log.d(TAG, "Invitations sent: " + ids.length);
-            } else {
-                // Sending failed or it was canceled, show failure message to
-                // the user
-                Log.d(TAG, "Failed to send invitation.");
-            }
-        }
-    }
 }

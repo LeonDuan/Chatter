@@ -161,8 +161,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
      */
     public Action getIndexApiAction() {
         Thing object = new Thing.Builder()
-                .setName("Upload Page") // TODO: Define a title for the content shown.
-                // TODO: Make sure this auto-generated URL is correct.
+                .setName("Upload Page")
                 .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
                 .build();
         return new Action.Builder(Action.TYPE_VIEW)

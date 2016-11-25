@@ -16,6 +16,13 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.UploadActivity"
+            android:parentActivityName=".ui.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.MainActivity" />
+        </activity>
+        <activity
             android:name=".ui.ContactActivity"
             android:parentActivityName=".ui.MainActivity">
             <meta-data
@@ -38,7 +45,6 @@
                 android:value=".ui.MainActivity" />
         </activity>
 
-
         <service
             android:name=".service.MyFirebaseMessagingService"
             android:exported="false">
@@ -58,7 +64,7 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".ui.UploadActivity"></activity>
+        <activity android:name=".ui.GalleryActivity"></activity>
     </application>
 
 </manifest>

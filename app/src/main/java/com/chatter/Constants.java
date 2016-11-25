@@ -7,6 +7,7 @@ package com.chatter;
 public final class Constants {
     public static final String MESSAGES_CHILD = "messages";
     public static final String CONTACTS_CHILD = "contacts";
+    public static final String CHAT_CHILD = "singleChat";
     public static final String USERS = "users";
     public static final int REQUEST_INVITE = 1;
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 200;
