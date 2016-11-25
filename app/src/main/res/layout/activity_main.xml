@@ -17,7 +17,6 @@
         android:ems="10"
         android:layout_marginBottom="51dp"
         android:id="@+id/etChat"
-        android:layout_above="@+id/bGroupChat"
         android:layout_centerHorizontal="true"
         android:hint="Type Email to chat"
         android:textAlignment="center" />

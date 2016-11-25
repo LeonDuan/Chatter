@@ -11,6 +11,8 @@
     android:id="@+id/contact_menu" />
     <item android:title="Upload"
         android:id="@+id/upload_menu" />
+    <item android:title="Gallery"
+        android:id="@+id/gallery_menu" />
     <item
         android:id="@+id/sign_out_menu"
         android:title="@string/sign_out"

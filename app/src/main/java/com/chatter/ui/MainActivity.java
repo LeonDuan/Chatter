@@ -196,6 +196,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             case R.id.upload_menu:
                 startActivity(new Intent(this, UploadActivity.class));
                 return true;
+            case R.id.gallery_menu:
+                startActivity(new Intent(this, GalleryActivity.class));
+                return true;
             case R.id.sign_out_menu:
                 mFirebaseAuth.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
