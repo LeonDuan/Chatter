@@ -1,6 +1,7 @@
 package com.chatter.ui;
 
 import android.app.ProgressDialog;
+import android.media.Image;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,6 +12,8 @@ import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -125,6 +128,11 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                             //if the upload is successfull
                             //hiding the progress dialog
                             progressDialog.dismiss();
+
+                            // adding the download URL to Firebase Database
+                            Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                            DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("FirebaseStroageImagesDownloadUrls/").push();
+                            mDatabaseRef.setValue(downloadUrl.toString());
 
                             //and displaying a success toast
                             Toast.makeText(getApplicationContext(), "File Uploaded ", Toast.LENGTH_LONG).show();

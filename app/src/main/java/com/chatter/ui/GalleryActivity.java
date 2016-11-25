@@ -6,41 +6,65 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 
 import com.chatter.R;
 import com.chatter.gallery.GalleryAdapter;
 import com.chatter.gallery.ImageModel;
 import com.chatter.gallery.RecyclerItemClickListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 public class GalleryActivity extends AppCompatActivity {
     private GalleryAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private GridLayoutManager mGridLayoutManager;
+    private StorageReference mStorageRef;
 
     ArrayList<ImageModel> data = new ArrayList<>();
-    public static String IMGS[] = {
-    // Your image URLs here
-            "https://images.unsplash.com/photo-1444090542259-0af8fa96557e?q=80&fm=jpg&w=1080&fit=max&s=4b703b77b42e067f949d14581f35019b",
-            "https://images.unsplash.com/photo-1439546743462-802cabef8e97?dpr=2&fit=crop&fm=jpg&h=725&q=50&w=1300",
-            "https://images.unsplash.com/photo-1441155472722-d17942a2b76a?q=80&fm=jpg&w=1080&fit=max&s=80cb5dbcf01265bb81c5e8380e4f5cc1",
-            "https://images.unsplash.com/photo-1437651025703-2858c944e3eb?dpr=2&fit=crop&fm=jpg&h=725&q=50&w=1300",
-            "https://images.unsplash.com/photo-1431538510849-b719825bf08b?dpr=2&fit=crop&fm=jpg&h=725&q=50&w=1300",
-
-    };
+    public static ArrayList<String> IMGS = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
 
-        for (int i = 0; i < IMGS.length; i++) {
+        // getting download url from Firebase database
+        DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference();
+        mDatabaseRef.child("FirebaseStroageImagesDownloadUrls/").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                IMGS.clear();
+                Log.e("Count " ,""+dataSnapshot.getChildrenCount());
+                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                    String url = postSnapshot.getValue(String.class);
+                    IMGS.add(url);
+                    Log.e("Get Data", url);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        for (int i = 0; i < IMGS.size(); i++) {
 
             ImageModel imageModel = new ImageModel();
             imageModel.setName("Image " + i);
-            imageModel.setUrl(IMGS[i]);
+            imageModel.setUrl(IMGS.get(i));
             data.add(imageModel);
 
         }
@@ -68,4 +92,5 @@ public class GalleryActivity extends AppCompatActivity {
                 }));
 
     }
+
 }

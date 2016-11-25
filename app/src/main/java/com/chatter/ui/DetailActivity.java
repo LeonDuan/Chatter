@@ -61,24 +61,18 @@ public class DetailActivity extends AppCompatActivity {
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
             }
 
             @Override
             public void onPageSelected(int position) {
-
                 //noinspection ConstantConditions
                 setTitle(data.get(position).getName());
-
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
-
             }
         });
-
-
     }
 
     /**
