@@ -77,6 +77,7 @@ public class GroupChatActivity extends AppCompatActivity implements GoogleApiCli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_chat);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -108,7 +109,6 @@ public class GroupChatActivity extends AppCompatActivity implements GoogleApiCli
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
 
         // messages display setup
-        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         mFirebaseAdapter = new FirebaseRecyclerAdapter<ChatterMessage,
                 MessageViewHolder>(
                 ChatterMessage.class,
@@ -120,6 +120,13 @@ public class GroupChatActivity extends AppCompatActivity implements GoogleApiCli
             protected void populateViewHolder(MessageViewHolder viewHolder,
                                               ChatterMessage chatterMessage, int position) {
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+
+
+
+
+
+
+
                 viewHolder.messageTextView.setText(chatterMessage.getText());
                 viewHolder.messengerTextView.setText(chatterMessage.getName());
                 if (chatterMessage.getPhotoUrl() == null) {

@@ -201,6 +201,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                 }
                 else{
                     viewHolder.messageTextView.setText(chatterMessage.getText());
+                    viewHolder.messageImageView.setImageResource(android.R.color.transparent);
                 }
 
 
