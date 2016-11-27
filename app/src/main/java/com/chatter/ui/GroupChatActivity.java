@@ -49,6 +49,8 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.chatter.Constants.*;
+
 public class GroupChatActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     private FirebaseAuth mFirebaseAuth;
@@ -185,7 +187,8 @@ public class GroupChatActivity extends AppCompatActivity implements GoogleApiCli
                 ChatterMessage chatterMessage = new
                         ChatterMessage(mMessageEditText.getText().toString(),
                         mUsername,
-                        mPhotoUrl);
+                        mPhotoUrl,
+                        TEXT);
                 mFirebaseDatabaseReference.child(constants.MESSAGES_CHILD)
                         .push().setValue(chatterMessage);
                 mMessageEditText.setText("");

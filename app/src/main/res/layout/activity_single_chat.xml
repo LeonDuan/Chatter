@@ -30,8 +30,8 @@
             android:layout_width="39dp"
             android:layout_height="wrap_content"
             android:id="@+id/moreButton"
-            android:textSize="10sp"
-            android:layout_weight="0.07" />
+            android:textSize="8sp"
+            android:layout_weight="0.04" />
 
         <EditText
             android:id="@+id/messageEditText"
@@ -42,11 +42,14 @@
 
         <Button
             android:id="@+id/sendButton"
-            android:layout_width="wrap_content"
+            android:layout_width="46dp"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:enabled="false"
-            android:text="SEND"/>
+            android:background="@android:drawable/ic_menu_send"
+            android:elevation="0dp"
+            android:layout_weight="0.03"
+            android:backgroundTint="@color/colorPrimary" />
 
     </LinearLayout>
 

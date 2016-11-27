@@ -2,6 +2,8 @@ package com.chatter.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -157,23 +159,41 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                         StorageReference ref = FirebaseStorage.getInstance().getReference();
                         ref = ref.child(chatterMessage.getText());
 
-                        final File localFile = File.createTempFile(ref.getName(), "jpg");
+                        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                        File f = new File(storageDir.toString()+"/"+ref.getName());
 
-                        ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                viewHolder.messageImageView.setAdjustViewBounds(true);
-                                viewHolder.messageImageView.setMaxHeight(500);
-                                viewHolder.messageImageView.setMaxWidth(500);
-                                setPic(viewHolder.messageImageView, localFile.getPath());
+                        //if the file exists
+                        if(f.exists())
+                        {
+                            viewHolder.messageImageView.setAdjustViewBounds(true);
+                            viewHolder.messageImageView.setMaxHeight(500);
+                            viewHolder.messageImageView.setMaxWidth(500);
+                            setPic(viewHolder.messageImageView, f.getPath());
+                        }
+                        //if the file doesn't exist
+                        else
+                        {
+                            final File localFile = File.createTempFile(ref.getName(), "jpg");
+                            ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                    viewHolder.messageImageView.setAdjustViewBounds(true);
+                                    viewHolder.messageImageView.setMaxHeight(500);
+                                    viewHolder.messageImageView.setMaxWidth(500);
+                                    setPic(viewHolder.messageImageView, localFile.getPath());
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    Toast.makeText(SingleChatActivity.this, "Failed to load picture", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
 
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception exception) {
-                                Toast.makeText(SingleChatActivity.this, "Failed to load picture", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+
+
+
+
                     } catch(IOException e) {
                         System.out.println(e);
                     }
@@ -251,7 +271,8 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                 ChatterMessage chatterMessage = new
                         ChatterMessage(mMessageEditText.getText().toString(),
                         mUsername,
-                        mPhotoUrl);
+                        mPhotoUrl,
+                        TEXT);
                 mFirebaseDatabaseReference.child(finalRoomNumber)
                         .push().setValue(chatterMessage);
                 mMessageEditText.setText("");
@@ -351,8 +372,8 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                         //The key argument here must match that used in the other activity
                     }
                     final String finalRoomNumber = roomName;
-                    ChatterMessage chatterMessage = new ChatterMessage(refString, mUsername, mPhotoUrl);
-                    mFirebaseDatabaseReference.child(finalRoomNumber) 
+                    ChatterMessage chatterMessage = new ChatterMessage(refString, mUsername, mPhotoUrl, IMAGE);
+                    mFirebaseDatabaseReference.child(finalRoomNumber)
                             .push().setValue(chatterMessage);
                     mMessageEditText.setText("");
                     Toast.makeText(SingleChatActivity.this, "Picture Sent!", Toast.LENGTH_SHORT).show();
