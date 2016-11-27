@@ -2,10 +2,17 @@ package com.chatter.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,11 +51,22 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.chatter.Constants.*;
 
 public class SingleChatActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     private FirebaseAuth mFirebaseAuth;
@@ -58,10 +77,13 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
     private Button mSendButton;
+    private Button mMoreButton;
     private RecyclerView mMessageRecyclerView;
     private LinearLayoutManager mLinearLayoutManager;
     private ProgressBar mProgressBar;
     private EditText mMessageEditText;
+    private StorageReference mStorage;
+
 
     private Constants constants;
     private String TAG = "SingleChatActivity";
@@ -120,10 +142,48 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                 mFirebaseDatabaseReference.child(roomName)) {
 
             @Override
-            protected void populateViewHolder(MessageViewHolder viewHolder,
+            protected void populateViewHolder(final MessageViewHolder viewHolder,
                                               ChatterMessage chatterMessage, int position) {
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                viewHolder.messageTextView.setText(chatterMessage.getText());
+
+                //decide to show text or image
+                if (chatterMessage.getType() == IMAGE) {
+                    try {
+//                        URL url = new URL(chatterMessage.getText());
+//                        Bitmap image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+//                        Bitmap bitmap = Bitmap.createScaledBitmap(image, 150, 150, false);
+
+                        //get the storage reference to the received image
+                        StorageReference ref = FirebaseStorage.getInstance().getReference();
+                        ref = ref.child(chatterMessage.getText());
+
+                        final File localFile = File.createTempFile(ref.getName(), "jpg");
+
+                        ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                viewHolder.messageImageView.setAdjustViewBounds(true);
+                                viewHolder.messageImageView.setMaxHeight(500);
+                                viewHolder.messageImageView.setMaxWidth(500);
+                                setPic(viewHolder.messageImageView, localFile.getPath());
+
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                Toast.makeText(SingleChatActivity.this, "Failed to load picture", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } catch(IOException e) {
+                        System.out.println(e);
+                    }
+
+                }
+                else{
+                    viewHolder.messageTextView.setText(chatterMessage.getText());
+                }
+
+
                 viewHolder.messengerTextView.setText(chatterMessage.getName());
                 if (chatterMessage.getPhotoUrl() == null) {
                     viewHolder.messengerImageView
@@ -197,6 +257,14 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                 mMessageEditText.setText("");
             }
         });
+        mMoreButton = (Button) findViewById(R.id.moreButton);
+        mMoreButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dispatchTakePictureIntent();
+            }
+        }
+        );
     }
 
     @Override
@@ -235,6 +303,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        final String downloadUrl;
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: requestCode=" + requestCode +
                 ", resultCode=" + resultCode);
@@ -251,5 +320,143 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                 Log.d(TAG, "Failed to send invitation.");
             }
         }
+        else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            //save image to local storage
+            galleryAddPic();
+
+
+            //save image to firebase storage
+            mStorage = FirebaseStorage.getInstance().getReference();
+            Uri uri = Uri.fromFile(new File(mCurrentPhotoPath));
+            String currentUser = mFirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            StorageReference ref = mStorage.child("images").child(currentUser).child(uri.getLastPathSegment());
+            final String refString = "images/"+currentUser+"/"+uri.getLastPathSegment();
+            Toast.makeText(this, "Sending Picture", Toast.LENGTH_SHORT).show();
+            UploadTask uploadTask = ref.putFile(uri);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    Toast.makeText(SingleChatActivity.this, "Failed to send picture", Toast.LENGTH_SHORT).show();
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                    //send the message
+                    Bundle extras = getIntent().getExtras();
+                    String roomName = "1";
+                    if (extras != null) {
+                        roomName = extras.getString("roomname");
+                        //The key argument here must match that used in the other activity
+                    }
+                    final String finalRoomNumber = roomName;
+                    ChatterMessage chatterMessage = new ChatterMessage(refString, mUsername, mPhotoUrl);
+                    mFirebaseDatabaseReference.child(finalRoomNumber)
+                            .push().setValue(chatterMessage);
+                    mMessageEditText.setText("");
+                    Toast.makeText(SingleChatActivity.this, "Picture Sent!", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+
+//
+//            String path = getPath(uri);
+//            Bitmap bitmap = BitmapFactory.decodeFile(path);
+//
+//
+//            StorageReference filePath = mStorage.child("images").child(currentUser).child(uri.getLastPathSegment());
+//            filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                @Override
+//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                    Toast.makeText(SingleChatActivity.this,"image sent", Toast.LENGTH_LONG).show();
+//                }
+//            });
+
+
+
+        }
+    }
+
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+            }
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.chatter.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    String mCurrentPhotoPath;
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(mCurrentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
+    }
+    public String getPath(Uri uri)
+    {
+//        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+//        cursor.moveToFirst();
+//        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+//        return cursor.getString(idx);
+        String result;
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        if (cursor == null) { // Source is Dropbox or other similar local file path
+            result = uri.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
+        }
+        return result;
+    }
+
+    private void setPic(ImageView mImageView, String mCurrentPhotoPath) {
+        // Get the dimensions of the bitmap
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        int photoW = bmOptions.outWidth;
+        int photoH = bmOptions.outHeight;
+
+        // Determine how much to scale down the image
+        int scaleFactor = 3;
+
+        // Decode the image file into a Bitmap sized to fill the View
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
+        bmOptions.inPurgeable = true;
+
+        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        mImageView.setImageBitmap(bitmap);
     }
 }
