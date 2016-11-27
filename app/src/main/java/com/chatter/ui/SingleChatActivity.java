@@ -352,7 +352,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                     }
                     final String finalRoomNumber = roomName;
                     ChatterMessage chatterMessage = new ChatterMessage(refString, mUsername, mPhotoUrl);
-                    mFirebaseDatabaseReference.child(finalRoomNumber)
+                    mFirebaseDatabaseReference.child(finalRoomNumber) 
                             .push().setValue(chatterMessage);
                     mMessageEditText.setText("");
                     Toast.makeText(SingleChatActivity.this, "Picture Sent!", Toast.LENGTH_SHORT).show();
