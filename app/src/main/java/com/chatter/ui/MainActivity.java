@@ -65,9 +65,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private SharedPreferences mSharedPreferences;
     private EditText etChat;
     private Button bSingleChat;
-    private Button bGroupChat;
-    private Button bContact;
-    private Button bUpload;
+    private EditText etContact;
+    private Button bAddContact;
+    private TextView tvUserEmail;
 
     private Constants constants;
     private String TAG = "MainActivity";
@@ -101,6 +101,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         }
 
+        // initialize welcome message email
+        tvUserEmail = (TextView) findViewById(R.id.tvUserEmail);
+        tvUserEmail.setText(mUseremail);
+
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserid).child("email").setValue(mUsername);
@@ -112,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .addApi(AppInvite.API)
                 .build();
 
-        // buttons
+        // button to start chat
         bSingleChat = (Button) findViewById(R.id.bSingleChat);
         bSingleChat.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,6 +148,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
                         }
                     });
+                }
+            }
+        });
+
+        // button to add contact
+        bAddContact = (Button) findViewById(R.id.bAddContact);
+        bAddContact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                etContact = (EditText) findViewById(R.id.etContact);
+                if(etContact!=null){
+                    String contact = etContact.getText().toString();
+                    mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).push().child("email").setValue(contact);
+                    Toast.makeText(MainActivity.this, contact + " added", Toast.LENGTH_SHORT).show();
                 }
             }
         });

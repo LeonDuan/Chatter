@@ -43,8 +43,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.chatter.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
@@ -121,7 +124,38 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
             protected void populateViewHolder(MessageViewHolder viewHolder,
                                               ChatterContact chatterContact, int position) {
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                viewHolder.messengerTextView.setText(chatterContact.getEmail());
+                final String email1 = chatterContact.getEmail();
+                final String email2 = mFirebaseUser.getEmail();
+                viewHolder.messengerTextView.setText(email1);
+                viewHolder.messengerTextView.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View view) {
+                        final String tmp = email1.split("@")[0] + email2.split("@")[0];
+                        final String tmp2 = email2.split("@")[0] + email1.split("@")[0];
+                        mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if(!dataSnapshot.hasChild(tmp) && !dataSnapshot.hasChild(tmp2)){
+                                    ChatterMessage system = new ChatterMessage("You can now start chatting.", "System");
+                                    mFirebaseDatabaseReference.child(tmp).push().setValue(system);
+                                }
+
+                                Intent intent = new Intent(ContactActivity.this, SingleChatActivity.class);
+                                if(dataSnapshot.hasChild(tmp)){
+                                    intent.putExtra("roomname", tmp);
+                                }else {
+                                    intent.putExtra("roomname", tmp2);
+                                }
+                                startActivity(intent);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                });
 
                 if (chatterContact.getPhotoUrl() == null) {
                     viewHolder.messengerImageView
