@@ -325,7 +325,6 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        final String downloadUrl;
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: requestCode=" + requestCode +
                 ", resultCode=" + resultCode);
@@ -380,23 +379,6 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                     Toast.makeText(SingleChatActivity.this, "Picture Sent!", Toast.LENGTH_SHORT).show();
                 }
             });
-
-
-//
-//            String path = getPath(uri);
-//            Bitmap bitmap = BitmapFactory.decodeFile(path);
-//
-//
-//            StorageReference filePath = mStorage.child("images").child(currentUser).child(uri.getLastPathSegment());
-//            filePath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//                @Override
-//                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                    Toast.makeText(SingleChatActivity.this,"image sent", Toast.LENGTH_LONG).show();
-//                }
-//            });
-
-
-
         }
     }
 
