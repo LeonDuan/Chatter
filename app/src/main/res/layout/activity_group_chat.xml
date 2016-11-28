@@ -36,11 +36,14 @@
 
         <Button
             android:id="@+id/sendButton"
-            android:layout_width="wrap_content"
+            android:layout_width="46dp"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:enabled="false"
-            android:text="SEND"/>
+            android:background="@android:drawable/ic_menu_send"
+            android:elevation="0dp"
+            android:layout_weight="0.03"
+            android:backgroundTint="@color/colorPrimary" />
 
     </LinearLayout>
 
