@@ -105,6 +105,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         tvUserEmail = (TextView) findViewById(R.id.tvUserEmail);
         tvUserEmail.setText(mUseremail);
 
+        // firebase database reference
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
+
         // initialize google API client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
