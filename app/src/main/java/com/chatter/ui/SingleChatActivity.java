@@ -189,11 +189,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                                 }
                             });
                         }
-
-
-
-
-
+                        viewHolder.messageTextView.setVisibility(TextView.INVISIBLE);
                     } catch(IOException e) {
                         System.out.println(e);
                     }
