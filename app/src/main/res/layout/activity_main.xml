@@ -10,24 +10,68 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.chatter.ui.MainActivity">
 
-    <EditText
+    <TextView
+        android:text="Welcome To Chatter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:layout_marginBottom="51dp"
-        android:id="@+id/etChat"
+        android:layout_marginTop="44dp"
+        android:id="@+id/textView2"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:hint="Type Email to chat"
-        android:textAlignment="center" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:id="@+id/tvUserEmail"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:text="user 's email"
+        android:layout_below="@+id/textView2"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:text="Chat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/bSingleChat"
-        android:layout_marginTop="50dp"
-        android:layout_alignParentTop="true"
+        android:layout_marginTop="56dp"
+        android:layout_alignTop="@+id/etChat"
         android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:id="@+id/etContact"
+        android:hint="Email add to Contact"
+        android:textAlignment="center"
+        android:layout_marginTop="66dp"
+        android:layout_below="@+id/bSingleChat"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:id="@+id/etChat"
+        android:hint="Type Email to chat"
+        android:textAlignment="center"
+        android:layout_marginTop="68dp"
+        android:layout_below="@+id/tvUserEmail"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:text="Add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bAddContact"
+        android:layout_marginTop="15dp"
+        android:layout_below="@+id/etContact"
+        android:layout_alignStart="@+id/bSingleChat" />
 
 </RelativeLayout>

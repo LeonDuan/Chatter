@@ -98,6 +98,9 @@ public class GroupChatActivity extends AppCompatActivity implements GoogleApiCli
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
+
+
+
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
