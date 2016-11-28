@@ -2,19 +2,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/single_chat_menu"
-        android:title="@string/single_chat" />
     <item android:title="Group Chat"
         android:id="@+id/group_chat_menu" />
+
     <item android:title="Contacts"
     android:id="@+id/contact_menu" />
+
     <item android:title="Upload"
         android:id="@+id/upload_menu" />
+
     <item android:title="Gallery"
         android:id="@+id/gallery_menu" />
+
     <item
         android:id="@+id/sign_out_menu"
         android:title="@string/sign_out"
         app:showAsAction="never"/>
+
 </menu>

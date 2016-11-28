@@ -185,8 +185,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 
-            case R.id.single_chat_menu:
-                return true;
             case R.id.group_chat_menu:
                 startActivity(new Intent(this, GroupChatActivity.class));
                 return true;
