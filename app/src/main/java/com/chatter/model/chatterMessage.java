@@ -1,20 +1,32 @@
 package com.chatter.model;
 
-public class ChatterMessage {
+import com.google.firebase.storage.StorageReference;
 
+import static com.chatter.Constants.*;
+
+public class ChatterMessage implements ChatterMessageInterface{
+    private final int type;
     private String text;
     private String name;
     private String photoUrl;
+    private String localUri;
 
     public ChatterMessage() {
+        type = TEXT;
+    }
+    public ChatterMessage(String text, String name){
+        this.text = text;
+        this.name = name;
+        type = TEXT;
     }
 
-    public ChatterMessage(String text, String name, String photoUrl) {
+
+    public ChatterMessage(String text, String name, String photoUrl, int type) {
         this.text = text;
         this.name = name;
         this.photoUrl = photoUrl;
+        this.type = type;
     }
-
     public String getText() {
         return text;
     }
@@ -38,4 +50,10 @@ public class ChatterMessage {
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
     }
+
+    public int getType()
+    {
+        return type;
+    }
+
 }

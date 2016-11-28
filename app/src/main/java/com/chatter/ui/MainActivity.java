@@ -39,8 +39,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.chatter.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
@@ -56,13 +59,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private DatabaseReference mFirebaseDatabaseReference;
     private GoogleApiClient mGoogleApiClient;
     private String mUsername;
+    private String mUserid;
+    private String mUseremail;
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
-    private Button mSendButton;
-    private RecyclerView mMessageRecyclerView;
-    private LinearLayoutManager mLinearLayoutManager;
-    private ProgressBar mProgressBar;
-    private EditText mMessageEditText;
+    private EditText etChat;
+    private Button bSingleChat;
+    private Button bGroupChat;
+    private Button bContact;
+    private Button bUpload;
 
     private Constants constants;
     private String TAG = "MainActivity";
@@ -86,13 +91,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             return;
         } else {
             mUsername = mFirebaseUser.getDisplayName();
-            if(mUsername==null){
-                mUsername = constants.ANONYMOUS;
+            mUserid = mFirebaseUser.getUid();
+            mUseremail = mFirebaseUser.getEmail();
+            if (mUsername == null) {
+                mUsername = mUseremail;
             }
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
         }
+
+
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserid).child("email").setValue(mUsername);
 
         // initialize google API client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -101,97 +112,39 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .addApi(AppInvite.API)
                 .build();
 
-        // Initialize ProgressBar and RecyclerView.
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-        mMessageRecyclerView = (RecyclerView) findViewById(R.id.messageRecyclerView);
-        mLinearLayoutManager = new LinearLayoutManager(this);
-        mLinearLayoutManager.setStackFromEnd(true);
-        mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
-
-        // messages display setup
-        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<ChatterMessage,
-                MessageViewHolder>(
-                ChatterMessage.class,
-                R.layout.item_message,
-                MessageViewHolder.class,
-                mFirebaseDatabaseReference.child(constants.MESSAGES_CHILD)) {
-
-            @Override
-            protected void populateViewHolder(MessageViewHolder viewHolder,
-                                              ChatterMessage chatterMessage, int position) {
-                mProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                viewHolder.messageTextView.setText(chatterMessage.getText());
-                viewHolder.messengerTextView.setText(chatterMessage.getName());
-                if (chatterMessage.getPhotoUrl() == null) {
-                    viewHolder.messengerImageView
-                            .setImageDrawable(ContextCompat
-                                    .getDrawable(MainActivity.this,
-                                            R.drawable.ic_account_circle_black_36dp));
-                } else {
-                    Glide.with(MainActivity.this)
-                            .load(chatterMessage.getPhotoUrl())
-                            .into(viewHolder.messengerImageView);
-                }
-            }
-        };
-
-        // scroll to the bottom when new message added
-        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                super.onItemRangeInserted(positionStart, itemCount);
-                int friendlyMessageCount = mFirebaseAdapter.getItemCount();
-                int lastVisiblePosition =
-                        mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
-                // If the recycler view is initially being loaded or the
-                // user is at the bottom of the list, scroll to the bottom
-                // of the list to show the newly added message.
-                if (lastVisiblePosition == -1 ||
-                        (positionStart >= (friendlyMessageCount - 1) &&
-                                lastVisiblePosition == (positionStart - 1))) {
-                    mMessageRecyclerView.scrollToPosition(positionStart);
-                }
-            }
-        });
-        mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mMessageRecyclerView.setAdapter(mFirebaseAdapter);
-
-        // messaging text area
-        mMessageEditText = (EditText) findViewById(R.id.messageEditText);
-        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(mSharedPreferences
-                .getInt(constants.MSG_LENGTH, constants.DEFAULT_MSG_LENGTH_LIMIT))});
-        mMessageEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.toString().trim().length() > 0) {
-                    mSendButton.setEnabled(true);
-                } else {
-                    mSendButton.setEnabled(false);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-            }
-        });
-
-        // send button
-        mSendButton = (Button) findViewById(R.id.sendButton);
-        mSendButton.setOnClickListener(new View.OnClickListener() {
+        // buttons
+        bSingleChat = (Button) findViewById(R.id.bSingleChat);
+        bSingleChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ChatterMessage chatterMessage = new
-                        ChatterMessage(mMessageEditText.getText().toString(),
-                        mUsername,
-                        mPhotoUrl);
-                mFirebaseDatabaseReference.child(constants.MESSAGES_CHILD)
-                        .push().setValue(chatterMessage);
-                mMessageEditText.setText("");
+                etChat = (EditText) findViewById(R.id.etChat);
+                String chat = etChat.getText().toString();
+                if(etChat!=null){
+                    final String tmp = mUseremail.split("@")[0] + chat.split("@")[0];
+                    final String tmp2 = chat.split("@")[0] + mUseremail.split("@")[0];
+                    mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(!dataSnapshot.hasChild(tmp) && !dataSnapshot.hasChild(tmp2)){
+                                ChatterMessage system = new ChatterMessage("You can now start chatting.", "System");
+                                mFirebaseDatabaseReference.child(tmp).push().setValue(system);
+                            }
+
+                            Intent intent = new Intent(MainActivity.this, SingleChatActivity.class);
+                            if(dataSnapshot.hasChild(tmp)){
+                                intent.putExtra("roomname", tmp);
+                            }else {
+                                intent.putExtra("roomname", tmp2);
+                            }
+                            startActivity(intent);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
             }
         });
     }
@@ -203,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         if(mFirebaseUser==null){
             startActivity(new Intent(this, SignInActivity.class));
             finish();
-            return;
         }
     }
 
@@ -232,15 +184,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            //case R.id.invite_menu:
-               // sendInvitation();
+
+            case R.id.group_chat_menu:
+                startActivity(new Intent(this, GroupChatActivity.class));
+                return true;
             case R.id.contact_menu:
                 startActivity(new Intent(this, ContactActivity.class));
+                return true;
+            case R.id.upload_menu:
+                startActivity(new Intent(this, UploadActivity.class));
+                return true;
+            case R.id.gallery_menu:
+                startActivity(new Intent(this, GalleryActivity.class));
                 return true;
             case R.id.sign_out_menu:
                 mFirebaseAuth.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                mUsername = constants.ANONYMOUS;
                 startActivity(new Intent(this, SignInActivity.class));
                 return true;
             default:
@@ -256,31 +215,4 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
-    private void sendInvitation() {
-        Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invitation_title))
-                .setMessage(getString(R.string.invitation_message))
-                .setCallToActionText(getString(R.string.invitation_cta))
-                .build();
-        startActivityForResult(intent, constants.REQUEST_INVITE);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult: requestCode=" + requestCode +
-                ", resultCode=" + resultCode);
-
-        if (requestCode == constants.REQUEST_INVITE) {
-            if (resultCode == RESULT_OK) {
-                // Check how many invitations were sent.
-                String[] ids = AppInviteInvitation
-                        .getInvitationIds(resultCode, data);
-                Log.d(TAG, "Invitations sent: " + ids.length);
-            } else {
-                // Sending failed or it was canceled, show failure message to
-                // the user
-                Log.d(TAG, "Failed to send invitation.");
-            }
-        }
-    }
 }
