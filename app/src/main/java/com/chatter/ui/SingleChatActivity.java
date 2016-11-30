@@ -341,7 +341,6 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
             //save image to local storage
             galleryAddPic();
 
-
             //save image to firebase storage
             mStorage = FirebaseStorage.getInstance().getReference();
             Uri uri = Uri.fromFile(new File(mCurrentPhotoPath));
@@ -372,6 +371,12 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                     mFirebaseDatabaseReference.child(finalRoomNumber)
                             .push().setValue(chatterMessage);
                     mMessageEditText.setText("");
+
+                    // add to download url
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("FirebaseStroageImagesDownloadUrls/").push();
+                    mDatabaseRef.setValue(downloadUrl.toString());
+
                     Toast.makeText(SingleChatActivity.this, "Picture Sent!", Toast.LENGTH_SHORT).show();
                 }
             });
