@@ -65,6 +65,7 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
     private GoogleApiClient mGoogleApiClient;
     private String mUsername;
     private String mPhotoUrl;
+    private String mUserID;
     private SharedPreferences mSharedPreferences;
     private RecyclerView mMessageRecyclerView;
     private LinearLayoutManager mLinearLayoutManager;
@@ -94,6 +95,7 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
             return;
         } else {
             mUsername = mFirebaseUser.getDisplayName();
+            mUserID = mFirebaseUser.getUid();
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
@@ -118,7 +120,7 @@ public class ContactActivity extends AppCompatActivity implements GoogleApiClien
                 ChatterContact.class,
                 R.layout.item_contact,
                 MessageViewHolder.class,
-                mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD)) {
+                mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserID)) {
 
             @Override
             protected void populateViewHolder(MessageViewHolder viewHolder,

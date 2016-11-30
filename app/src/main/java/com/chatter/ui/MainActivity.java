@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private DatabaseReference mFirebaseDatabaseReference;
     private GoogleApiClient mGoogleApiClient;
     private String mUsername;
-    private String mUserid;
+    private String mUserID;
     private String mUseremail;
     private String mPhotoUrl;
     private SharedPreferences mSharedPreferences;
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             return;
         } else {
             mUsername = mFirebaseUser.getDisplayName();
-            mUserid = mFirebaseUser.getUid();
+            mUserID = mFirebaseUser.getUid();
             mUseremail = mFirebaseUser.getEmail();
             if (mUsername == null) {
                 mUsername = mUseremail;
@@ -166,25 +166,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            DataSnapshot subSnapshot = dataSnapshot.child("contacts");
-                            for (DataSnapshot emailList : subSnapshot.getChildren()){
-                                if(contactFound){
-                                    break;
-                                }
-                                String email = emailList.getValue().toString();
-                                String toCompare = email.substring(7, email.length()-1);
-                                if (contact.equals(toCompare)){
-                                    mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).push().child("email").setValue(contact);
-                                    Toast.makeText(MainActivity.this, contact + " added", Toast.LENGTH_SHORT).show();
-                                    contactFound = true;
-                                }
-                                else
-                                {
-                                    continue;
-                                }
-                            }
-                            if (contactFound == false) Toast.makeText(MainActivity.this, "This person is not on Chatter", Toast.LENGTH_SHORT).show();
-                            contactFound = false;
+                            ChatterContact tmp = new ChatterContact(contact);
+                            mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserID).push().setValue(tmp);
+                            Toast.makeText(MainActivity.this, contact + " added", Toast.LENGTH_SHORT).show();
+
                         }
 
                         @Override
@@ -192,9 +177,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
                         }
                     });
-
-
-
 
                 }
             }

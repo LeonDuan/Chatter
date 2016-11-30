@@ -20,7 +20,6 @@ public class ChatterMessage implements ChatterMessageInterface{
         type = TEXT;
     }
 
-
     public ChatterMessage(String text, String name, String photoUrl, int type) {
         this.text = text;
         this.name = name;
