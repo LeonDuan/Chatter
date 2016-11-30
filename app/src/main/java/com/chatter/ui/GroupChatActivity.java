@@ -370,6 +370,12 @@ public class GroupChatActivity extends AppCompatActivity implements GoogleApiCli
                     mFirebaseDatabaseReference.child(constants.MESSAGES_CHILD)
                             .push().setValue(chatterMessage);
                     mMessageEditText.setText("");
+
+                    // add to download url
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    DatabaseReference mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("FirebaseStroageImagesDownloadUrls/").push();
+                    mDatabaseRef.setValue(downloadUrl.toString());
+
                     Toast.makeText(GroupChatActivity.this, "Picture Sent!", Toast.LENGTH_SHORT).show();
                 }
             });
