@@ -46,11 +46,9 @@ public class GalleryActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 IMGS.clear();
-                Log.e("Count " ,""+dataSnapshot.getChildrenCount());
                 for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                     String url = postSnapshot.getValue(String.class);
                     IMGS.add(url);
-                    Log.e("Get Data", url);
                 }
             }
 
