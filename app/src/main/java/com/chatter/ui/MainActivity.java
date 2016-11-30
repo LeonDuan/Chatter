@@ -68,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private EditText etContact;
     private Button bAddContact;
     private TextView tvUserEmail;
+    private  FirebaseDatabase mFirebaseDatabase;
+    private boolean contactFound = false;
 
     private Constants constants;
     private String TAG = "MainActivity";
@@ -158,9 +160,42 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             public void onClick(View view) {
                 etContact = (EditText) findViewById(R.id.etContact);
                 if(etContact!=null){
-                    String contact = etContact.getText().toString();
-                    mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).push().child("email").setValue(contact);
-                    Toast.makeText(MainActivity.this, contact + " added", Toast.LENGTH_SHORT).show();
+                    final String contact = etContact.getText().toString();
+
+                    //check the desired contact is in the database
+                    mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            DataSnapshot subSnapshot = dataSnapshot.child("contacts");
+                            for (DataSnapshot emailList : subSnapshot.getChildren()){
+                                if(contactFound){
+                                    break;
+                                }
+                                String email = emailList.getValue().toString();
+                                String toCompare = email.substring(7, email.length()-1);
+                                if (contact.equals(toCompare)){
+                                    mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).push().child("email").setValue(contact);
+                                    Toast.makeText(MainActivity.this, contact + " added", Toast.LENGTH_SHORT).show();
+                                    contactFound = true;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+                            if (contactFound == false) Toast.makeText(MainActivity.this, "This person is not on Chatter", Toast.LENGTH_SHORT).show();
+                            contactFound = false;
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+
+
+
+
                 }
             }
         });
