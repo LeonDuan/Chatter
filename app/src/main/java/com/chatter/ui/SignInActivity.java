@@ -26,6 +26,9 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
@@ -33,6 +36,8 @@ public class SignInActivity extends AppCompatActivity implements
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 9001;
     private FirebaseAuth mFirebaseAuth;
+    private DatabaseReference mFirebaseDatabaseReference;
+
 
     private SignInButton mSignInButton;
 
@@ -62,6 +67,10 @@ public class SignInActivity extends AppCompatActivity implements
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .addApi(AppIndex.API).build();
+
+        //get Database
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
+
     }
 
     @Override
@@ -97,6 +106,7 @@ public class SignInActivity extends AppCompatActivity implements
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = result.getSignInAccount();
                 firebaseAuthWithGoogle(account);
+                mFirebaseDatabaseReference.child("EmailList").child(account.getId()).setValue(account.getEmail());
             } else {
                 // Google Sign In failed
                 Log.e(TAG, "Google Sign In failed.");

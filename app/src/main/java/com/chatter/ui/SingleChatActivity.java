@@ -49,8 +49,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.chatter.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.firebase.storage.FileDownloadTask;
@@ -85,6 +88,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
     private ProgressBar mProgressBar;
     private EditText mMessageEditText;
     private StorageReference mStorage;
+    private boolean found = false;
 
 
     private Constants constants;
@@ -120,6 +124,12 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
             roomName = extras.getString("roomname");
             //The key argument here must match that used in the other activity
         }
+        String title = roomName.replace(mFirebaseUser.getEmail().split("@")[0],"");
+        if (title.equals("")){
+            title = "yourself";
+        }
+        title = "Chat with " + title;
+        getSupportActionBar().setTitle(title);
 
         // initialize google API client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -160,15 +170,23 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                         ref = ref.child(chatterMessage.getText());
 
                         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                        File f = new File(storageDir.toString()+"/"+ref.getName());
+                        final File f = new File(storageDir.toString()+"/"+ref.getName());
 
                         //if the file exists
                         if(f.exists())
                         {
                             viewHolder.messageImageView.setAdjustViewBounds(true);
-                            viewHolder.messageImageView.setMaxHeight(500);
-                            viewHolder.messageImageView.setMaxWidth(500);
+                            viewHolder.messageImageView.setMaxHeight(700);
+                            viewHolder.messageImageView.setMaxWidth(700);
                             setPic(viewHolder.messageImageView, f.getPath());
+                            viewHolder.messageImageView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Intent intent = new Intent(getBaseContext(), ImageFullScreen.class);
+                                    intent.putExtra("filePath",f.getPath());
+                                    startActivity(intent);
+                                }
+                            });
                         }
                         //if the file doesn't exist
                         else
@@ -189,15 +207,18 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
                                 }
                             });
                         }
-                        viewHolder.messageTextView.setVisibility(TextView.INVISIBLE);
+                        viewHolder.messageTextView.setVisibility(View.GONE);
                     } catch(IOException e) {
                         System.out.println(e);
                     }
 
                 }
+                //if the message is text only
                 else{
+                    viewHolder.messageTextView.setVisibility(View.VISIBLE);
                     viewHolder.messageTextView.setText(chatterMessage.getText());
                     viewHolder.messageImageView.setImageResource(android.R.color.transparent);
+                    viewHolder.messageImageView.setOnClickListener(null);
                 }
 
 
@@ -454,7 +475,7 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
         int photoH = bmOptions.outHeight;
 
         // Determine how much to scale down the image
-        int scaleFactor = 3;
+        int scaleFactor = 2;
 
         // Decode the image file into a Bitmap sized to fill the View
         bmOptions.inJustDecodeBounds = false;
@@ -464,4 +485,6 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
         mImageView.setImageBitmap(bitmap);
     }
+
+
 }

@@ -47,8 +47,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -70,11 +74,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private TextView tvUserEmail;
     private  FirebaseDatabase mFirebaseDatabase;
     private boolean contactFound = false;
+    private Set<String> emails = new HashSet();
 
     private Constants constants;
     private String TAG = "MainActivity";
 
     private FirebaseRecyclerAdapter<ChatterMessage, MessageViewHolder> mFirebaseAdapter;
+    private boolean found;
 
 
     @Override
@@ -82,6 +88,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+
+        // firebase database reference
+        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
+
+
+        //keep Updating Email Set
+        keepUpdatingEmailSet();
 
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -107,9 +121,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         tvUserEmail = (TextView) findViewById(R.id.tvUserEmail);
         tvUserEmail.setText(mUseremail);
 
-        // firebase database reference
-        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-
         // initialize google API client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
@@ -122,11 +133,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         bSingleChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                etChat = (EditText) findViewById(R.id.etChat);
-                String chat = etChat.getText().toString();
-                if(etChat!=null){
+                //etChat = (EditText) findViewById(R.id.etChat);
+                //String chat = etChat.getText().toString();
+                String chat = chooseRandomChat();
+                if(chat != ""){
                     final String tmp = mUseremail.split("@")[0] + chat.split("@")[0];
                     final String tmp2 = chat.split("@")[0] + mUseremail.split("@")[0];
+
                     mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -169,7 +182,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             ChatterContact tmp = new ChatterContact(contact);
                             mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserID).push().setValue(tmp);
                             Toast.makeText(MainActivity.this, contact + " added", Toast.LENGTH_SHORT).show();
-
                         }
 
                         @Override
@@ -179,6 +191,54 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     });
 
                 }
+//                final String contact = etContact.getText().toString();
+//
+//                isEmailInServer(contact);
+//                if (found == true) {
+//                    ChatterContact tmp = new ChatterContact(contact);
+//                    mFirebaseDatabaseReference.child(constants.CONTACTS_CHILD).child(mUserID).push().setValue(tmp);
+//
+//                }
+//                if(found == true){
+//                    Toast.makeText(MainActivity.this, contact + " added", Toast.LENGTH_SHORT).show();
+//                    found = false;
+//                }
+//                else{
+//                    Toast.makeText(MainActivity.this, contact + " is not on Chatter", Toast.LENGTH_SHORT).show();
+//                }
+
+            }
+        });
+    }
+
+    private String chooseRandomChat() {
+        String chat = "";
+        Random r = new Random();
+        int toChoose = r.nextInt(emails.size());
+        int i = 0;
+        for (String email : emails){
+            if (toChoose == i){
+                chat = email;
+                break;
+            }
+            i+=1;
+        }
+        return chat;
+    }
+
+    private void keepUpdatingEmailSet() {
+        mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot email : dataSnapshot.child("EmailList").getChildren())
+                {
+                    emails.add(email.getValue().toString());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }
@@ -247,6 +307,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         // be available.
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
+    }
+
+    private void isEmailInServer(String email) {
+        final String emailToFind = email;
+        mFirebaseDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot email : dataSnapshot.child("EmailList").getChildren())
+                {
+                    if (emailToFind.equals(email.getValue().toString())){
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
     }
 
 }

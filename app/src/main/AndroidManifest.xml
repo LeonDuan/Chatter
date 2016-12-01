@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.chatter">
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -71,8 +79,9 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"></meta-data>
+                android:resource="@xml/file_paths" />
         </provider>
+
         <activity
             android:name=".ui.GalleryActivity"
             android:parentActivityName=".ui.MainActivity">
@@ -85,13 +94,9 @@
             android:parentActivityName=".ui.GalleryActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.GalleryActivity"/>
+                android:value=".ui.GalleryActivity" />
         </activity>
+        <activity android:name=".ui.ImageFullScreen"></activity>
     </application>
-
-    <uses-feature android:name="android.hardware.camera"
-        android:required="true" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="18"/>
 
 </manifest>
