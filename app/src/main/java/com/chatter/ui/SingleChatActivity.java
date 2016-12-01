@@ -125,9 +125,6 @@ public class SingleChatActivity extends AppCompatActivity implements GoogleApiCl
             //The key argument here must match that used in the other activity
         }
         String title = roomName.replace(mFirebaseUser.getEmail().split("@")[0],"");
-        if (title.equals("")){
-            title = "yourself";
-        }
         title = "Chat with " + title;
         getSupportActionBar().setTitle(title);
 

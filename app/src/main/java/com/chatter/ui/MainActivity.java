@@ -136,6 +136,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 //etChat = (EditText) findViewById(R.id.etChat);
                 //String chat = etChat.getText().toString();
                 String chat = chooseRandomChat();
+                while (chat.equals(mFirebaseUser.getEmail()))
+                {
+                    chat = chooseRandomChat();
+                }
                 if(chat != ""){
                     final String tmp = mUseremail.split("@")[0] + chat.split("@")[0];
                     final String tmp2 = chat.split("@")[0] + mUseremail.split("@")[0];
